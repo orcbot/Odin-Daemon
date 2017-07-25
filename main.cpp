@@ -91,19 +91,28 @@ int main(int argc, char const *argv[])
 
     while (true) {
 	    listen(sockfd, 5);
-	    cout << 1 << endl;
 	    clilen = sizeof(cli_addr);
-	    cout << 2 << endl;
 	    newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
-	    cout << 3 << endl;
 	    string addressMessage = inet_ntoa(cli_addr.sin_addr);
-	    cout << 4 << endl;
 	    if (newsockfd < 0) {
 	        output("FATAL ERROR", "Error on accept", false);
 	    }
 	    output("Listen", "Connection recieved from " + addressMessage, settings.getSilent());
 
-	    processRequests(newsockfd);
+	    output("Listen", "Splitting processes...", settings.getSilent());
+	    int pid = fork();
+
+	    if (pid == 0) {
+	    	//Child process
+	    	processRequests(newsockfd);
+	    } else if (pid > 0) {
+	    	//Parent Process
+	    	//Does nothing just goes back to listening
+	    } else {
+	    	//fork failed fr some reason
+	    	output("Listen", "fork() has failed for some reason....", settings.getSilent());
+	    }
+
 	}
 
     close(sockfd);
