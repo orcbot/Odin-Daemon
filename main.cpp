@@ -89,18 +89,23 @@ int main(int argc, char const *argv[])
     output("Init", "Binded port successfully...", settings.getSilent());
     output("Listen", "Waiting connections...", settings.getSilent());
 
-    listen(sockfd, 5);
-    clilen = sizeof(cli_addr);
-    newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
-    string addressMessage = inet_ntoa(cli_addr.sin_addr);
-    if (newsockfd < 0) {
-        output("FATAL ERROR", "Error on accept", false);
-    }
-    output("Listen", "Connection recieved from " + addressMessage, settings.getSilent());
+    while (true) {
+	    listen(sockfd, 5);
+	    cout << 1 << endl;
+	    clilen = sizeof(cli_addr);
+	    cout << 2 << endl;
+	    newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
+	    cout << 3 << endl;
+	    string addressMessage = inet_ntoa(cli_addr.sin_addr);
+	    cout << 4 << endl;
+	    if (newsockfd < 0) {
+	        output("FATAL ERROR", "Error on accept", false);
+	    }
+	    output("Listen", "Connection recieved from " + addressMessage, settings.getSilent());
 
-    processRequests(newsockfd);
+	    processRequests(newsockfd);
+	}
 
-    close(newsockfd);
     close(sockfd);
 
 	return 0;
@@ -119,7 +124,7 @@ void processRequests(int id) {
 	//respond
     char buffer[256];
 
-    while (true) {
+    while (strcmp("quit\n", buffer) != 0) {
         bzero(buffer,256);
         int n = read(id,buffer,255);
         if (n < 0) output("ERROR", "ERROR reading from socket", false);
@@ -129,6 +134,10 @@ void processRequests(int id) {
         int result = write(id, "RECIEVED", 8);
         if (n < 0) output("ERROR", "ERROR writing socket", false);
     }
+
+    output("ProcessRequest", "Closing Connection", false);
+    close(id);
+    exit(0);
 }
 
 /**
