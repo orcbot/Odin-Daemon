@@ -130,8 +130,8 @@ int main(int argc, char const *argv[])
 void processRequests(int id) {
 	//Will read the requests
 	//handle them
-	//respond
-    char buffer[256];
+	//responds
+    char buffer[2048];
 
     while (strcmp("quit\n", buffer) != 0) {
         bzero(buffer,256);
