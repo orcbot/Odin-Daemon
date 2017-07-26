@@ -1,5 +1,6 @@
 //@todo add better comments
 #include "lib/helper/config.h"
+#include "lib/variables/variable.h"
 #include <ctime>
 #include <iostream>
 #include <stdio.h>
@@ -134,12 +135,37 @@ void processRequests(int id) {
     char buffer[2048];
 
     while (strcmp("quit\n", buffer) != 0) {
-        bzero(buffer,256);
-        int n = read(id,buffer,255);
+        bzero(buffer,2048);
+        int n = read(id,buffer,2047);
         if (n < 0) output("ERROR", "ERROR reading from socket", false);
-        printf("Here is the message: %s\n",buffer);
 
-        //Does some processing
+        string message(buffer);
+        //cout << message;
+
+        // get the variables out
+        int pos = message.find('}');
+        while(pos > 0) {
+            cout << "Variable" << endl;
+            string object = message.substr(0, pos+1);
+            //cout << object << endl;
+            variable *temp = new variable(object);
+            temp->printVar();
+            delete temp;
+            message = message.substr(pos+2, message.length());
+            pos = message.find('}');
+        }
+
+        //get the calucaltions out
+        pos = message.find(';');
+        while(pos > 0) {
+            cout << "Instructions" << endl;
+            string object = message.substr(0, pos);
+            //cout << object << endl;
+            message = message.substr(pos+1, message.length());
+            pos = message.find(';');
+        }
+
+        //Sends the result back
         int result = write(id, "RECIEVED", 8);
         if (n < 0) output("ERROR", "ERROR writing socket", false);
     }

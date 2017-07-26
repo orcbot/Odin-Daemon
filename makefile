@@ -7,11 +7,14 @@ ifeq (run,$(firstword $(MAKECMDGOALS)))
   $(eval $(RUN_ARGS):;@:)
 endif
 
-make: main.cpp lib/helper/config.o
-	g++ main.cpp lib/helper/config.o -std=c++11 -o Odin.out
+make: main.cpp lib/helper/config.o lib/variables/variable.o
+	g++ main.cpp lib/helper/config.o lib/variables/variable.o -std=c++11 -o Odin.out
 
 config.o: lib/helper/config.h lib/helper/config.cpp
 	g++ lib/helper/config.h -o lib/helper/config.o
+
+variable.o: lib/variables/variable.h lib/variables/variable.cpp
+	g++ lib/variables/variable.h -o lib/variables/variable.o
 
 run: Odin.out
 	./Odin.out $(RUN_ARGS)
