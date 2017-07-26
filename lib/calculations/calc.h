@@ -1,12 +1,11 @@
 #ifndef CALC_H
 #define CALC_H
 
+#include "../variables/variable.h"
+
 class calc {
 public:
-	calc();
-	~calc();
-	
-	virtual void execute() = 0;	
+	virtual variable* execute() = 0;	
 };
 
 #endif
