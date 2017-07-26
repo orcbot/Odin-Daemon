@@ -1,6 +1,7 @@
 //@todo add better comments
 #include "lib/helper/config.h"
 #include "lib/variables/variable.h"
+#include "lib/varList/varlist.h"
 #include <ctime>
 #include <iostream>
 #include <stdio.h>
@@ -135,12 +136,18 @@ void processRequests(int id) {
     char buffer[2048];
 
     while (strcmp("quit\n", buffer) != 0) {
+        varlist list;
         bzero(buffer,2048);
         int n = read(id,buffer,2047);
-        if (n < 0) output("ERROR", "ERROR reading from socket", false);
+        if (n < 0) { 
+            output("ERROR", "ERROR reading from socket", false);
+            output("ProcessRequest", "Closing Connection", false);
+            close(id);
+            exit(0);
+        }
 
         string message(buffer);
-        //cout << message;
+        cout << message;
 
         // get the variables out
         int pos = message.find('}');
@@ -150,10 +157,16 @@ void processRequests(int id) {
             //cout << object << endl;
             variable *temp = new variable(object);
             temp->printVar();
-            delete temp;
+            list.add(temp);
+            
+            cout << "==========" << endl;
             message = message.substr(pos+2, message.length());
             pos = message.find('}');
         }
+
+        cout << "TESTING TO FIND VARIABLE IN LIST" << endl << flush;
+        variable* test = list.find("x");
+        test->printVar();
 
         //get the calucaltions out
         pos = message.find(';');
