@@ -1,7 +1,7 @@
 #include "variable.h"
-#include "../../rapidjson/stringbuffer.h"
-#include "../../rapidjson/prettywriter.h"
-#include "../../rapidjson/document.h"
+#include "../rapidjson/stringbuffer.h"
+#include "../rapidjson/prettywriter.h"
+#include "../rapidjson/document.h"
 #include <iostream>
 #include <string.h>
 using namespace std;
