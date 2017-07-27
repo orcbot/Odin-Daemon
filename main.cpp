@@ -136,7 +136,8 @@ void processRequests(int id) {
 	//responds
     char buffer[2048];
 
-    while (strcmp("quit\n", buffer) != 0) {
+    while (strcmp("QUIT", buffer) != 0) {
+        cout << "Start of while loop" << endl;
         varlist list;
         bzero(buffer,2048);
         int n = read(id,buffer,2047);
@@ -175,14 +176,27 @@ void processRequests(int id) {
             cout << "Instructions" << endl;
             string object = message.substr(0, pos);
             cout << object << endl;
-            string op = message.substr(0, message.find(' '));
+            int space = message.find(' ');
+            string op = object.substr(0, space);
 
             if (op.compare("SUM") == 0) {
                 //Will pull out the variable names
-                variable* op1 = list.find("x");
-                variable* res = list.find("y");
-                add temp(op1, op1, res);
-                res = temp.execute();
+                space = message.find(' '); 
+            	object = object.substr(space+1, object.length());
+
+                space = object.find(' '); 
+                string o1 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+              
+                string o2 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+                string result = object;
+
+                variable* op1 = list.find(o1);
+                variable* op2 = list.find(o2);
+                variable* res = list.find(result);
+                add temp(op1, op2, res);
+                temp.execute();
 
                 cout << "We've added some shit together" << endl;
                 cout << res->toJSON() << endl;
@@ -194,9 +208,12 @@ void processRequests(int id) {
             pos = message.find(';');
         }
 
+        string returnVal = list.find("result")->toJSON();
+
         //Sends the result back
-        int result = write(id, "RECIEVED", 8);
+        int result = write(id, returnVal.c_str(), returnVal.length());
         if (n < 0) output("ERROR", "ERROR writing socket", false);
+        cout << "End of while loop" << endl;
     }
 
     output("ProcessRequest", "Closing Connection", false);

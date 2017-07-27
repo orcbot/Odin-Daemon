@@ -14,7 +14,7 @@ public:
 	add(variable*, variable*, variable*);
 	~add() { }
 	
-	variable* execute();
+	void execute();
 };
 
 #endif

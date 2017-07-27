@@ -110,6 +110,10 @@ void variable::setRank(int _rank) {
 }
 
 void variable::setDimensions(int _dimensions[]) {
+	if (dimensions != NULL) {
+		delete dimensions;
+	}
+
 	dimensions = new int[rank];
 	for (int i = 0; i < rank; ++i) {
 		dimensions[i] = _dimensions[i];
@@ -117,6 +121,10 @@ void variable::setDimensions(int _dimensions[]) {
 }
 
 void variable::setValues(double _values[]) {
+	if (values != NULL) {
+		delete values;
+	}
+
 	int length = 1;
 	for (int i = 0; i < rank; ++i) {
 		length *= dimensions[i];
@@ -125,7 +133,7 @@ void variable::setValues(double _values[]) {
 	values = new double[length];
 	
 	for (int i = 0; i < length; ++i) {
-		cout << "CREATING " << i << " " << _values[i] << endl;
+		//cout << "CREATING " << i << " " << _values[i] << endl;
 		values[i] = _values[i];
 	}
 }

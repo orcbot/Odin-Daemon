@@ -5,7 +5,7 @@
 
 class calc {
 public:
-	virtual variable* execute() = 0;	
+	virtual void execute() = 0;	
 };
 
 #endif
