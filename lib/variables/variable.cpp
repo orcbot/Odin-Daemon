@@ -4,7 +4,15 @@
 #include "../rapidjson/document.h"
 #include <iostream>
 #include <string.h>
+#include <sstream>
 using namespace std;
+
+variable::variable() {
+	rank = 0;
+	dimensions = NULL;
+	values = NULL;
+	save = false;
+}
 
 variable::variable(string _json) {
 	//cout << "String " << _json << " Length " << _json.length() << endl;
@@ -93,6 +101,71 @@ bool variable::getSave() {
 	return save;
 }
 
+void variable::setName(string _name) {
+	name = _name;
+}
+
+void variable::setRank(int _rank) {
+	rank = _rank;
+}
+
+void variable::setDimensions(int _dimensions[]) {
+	dimensions = new int[rank];
+	for (int i = 0; i < rank; ++i) {
+		dimensions[i] = _dimensions[i];
+	}
+}
+
+void variable::setValues(double _values[]) {
+	int length = 1;
+	for (int i = 0; i < rank; ++i) {
+		length *= dimensions[i];
+	}
+
+	values = new double[length];
+	
+	for (int i = 0; i < length; ++i) {
+		cout << "CREATING " << i << " " << _values[i] << endl;
+		values[i] = _values[i];
+	}
+}
+
+void variable::setSave(bool _save) {
+	save = _save;
+}
+
 void variable::printVar() {
 	cout << name << " " << rank << endl;
+}
+
+string variable::toJSON() {
+	ostringstream convert;
+
+	convert << "{'name':'" << name << "', 'rank':" << rank << ", 'save':" << save << ", 'dimensions': [";
+
+	int length = 1;
+
+	for (int i = 0; i < rank; ++i) {
+		convert << dimensions[i];
+
+		if (i < rank - 1) {
+			convert << ", ";
+		}
+
+		length *= dimensions[i];
+	}
+
+	convert << "], 'values': [";
+
+	for (int i = 0; i < length; ++i) {
+		convert << values[i];
+
+		if (i < length - 1) {
+			convert << ", ";
+		}
+	}
+
+	convert << "]}";
+
+	return convert.str();
 }

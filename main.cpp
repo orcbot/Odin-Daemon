@@ -1,4 +1,5 @@
 //@todo add better comments
+#include "lib/calculations/add.h"
 #include "lib/helper/config.h"
 #include "lib/variables/variable.h"
 #include "lib/varList/varlist.h"
@@ -152,28 +153,43 @@ void processRequests(int id) {
         // get the variables out
         int pos = message.find('}');
         while(pos > 0) {
-            cout << "Variable" << endl;
+            //cout << "Variable" << endl;
             string object = message.substr(0, pos+1);
             //cout << object << endl;
             variable *temp = new variable(object);
-            temp->printVar();
+            //temp->printVar();
             list.add(temp);
             
-            cout << "==========" << endl;
+            //cout << "==========" << endl;
             message = message.substr(pos+2, message.length());
             pos = message.find('}');
         }
 
-        cout << "TESTING TO FIND VARIABLE IN LIST" << endl << flush;
-        variable* test = list.find("x");
-        test->printVar();
+        //cout << "TESTING TO FIND VARIABLE IN LIST" << endl << flush;
+        //variable* test = list.find("x");
+        //test->printVar();
 
         //get the calucaltions out
         pos = message.find(';');
         while(pos > 0) {
             cout << "Instructions" << endl;
             string object = message.substr(0, pos);
-            //cout << object << endl;
+            cout << object << endl;
+            string op = message.substr(0, message.find(' '));
+
+            if (op.compare("SUM") == 0) {
+                //Will pull out the variable names
+                variable* op1 = list.find("x");
+                variable* res = list.find("y");
+                add temp(op1, op1, res);
+                res = temp.execute();
+
+                cout << "We've added some shit together" << endl;
+                cout << res->toJSON() << endl;
+            } else if (op.compare("SUB") == 0) {
+                cout << "We are gonna subtract some shit" << endl;
+            }
+
             message = message.substr(pos+1, message.length());
             pos = message.find(';');
         }
