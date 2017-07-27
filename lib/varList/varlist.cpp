@@ -10,15 +10,18 @@ varlist::varlist() {
 
 varlist::~varlist() {
 	cout << "Starting DELETING" << endl;
-	while (head != NULL) {
-		cout << "A" << flush;
-		var* temp = head;
-		cout << "B" << flush;
-		head = head->next;
-		cout << "C" << flush;
-		//delete temp;
-		cout << "D" << flush << endl;
+	var *nodePtr;
+	var *nextNode;
+	nodePtr = head;
+
+	while (nodePtr == NULL) {
+		nextNode = nodePtr->next;
+
+		delete nodePtr;
+
+		nodePtr = nextNode;
 	}
+
 	cout << "DONE DELETING" << endl;
 }
 
