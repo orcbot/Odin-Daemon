@@ -149,7 +149,7 @@ void variable::printVar() {
 string variable::toJSON() {
 	ostringstream convert;
 
-	convert << "{'name':'" << name << "', 'rank':" << rank << ", 'save':" << save << ", 'dimensions': [";
+	convert << "{\"name\":\"" << name << "\", \"rank\":" << rank << ", \"save\":" << save << ", \"dimensions\": [";
 
 	int length = 1;
 
@@ -163,7 +163,7 @@ string variable::toJSON() {
 		length *= dimensions[i];
 	}
 
-	convert << "], 'values': [";
+	convert << "], \"values\": [";
 
 	for (int i = 0; i < length; ++i) {
 		convert << values[i];
