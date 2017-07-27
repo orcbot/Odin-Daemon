@@ -52,7 +52,7 @@ variable::variable(string _json) {
 		length *= dimensions[i];
 	}
 
-	cout << "Length " << length << endl;
+	//cout << "Length " << length << endl;
 
 	rapidjson::Value& valueArray = jsonDoc["values"];
 	assert(valueArray.IsArray());

@@ -9,11 +9,17 @@ varlist::varlist() {
 }
 
 varlist::~varlist() {
+	cout << "Starting DELETING" << endl;
 	while (head != NULL) {
+		cout << "A" << flush;
 		var* temp = head;
+		cout << "B" << flush;
 		head = head->next;
-		delete temp;
+		cout << "C" << flush;
+		//delete temp;
+		cout << "D" << flush << endl;
 	}
+	cout << "DONE DELETING" << endl;
 }
 
 void varlist::add(variable* _store) {

@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sstream>
 #include <time.h>
 #include <unistd.h>
 #include <sys/types.h> 
@@ -18,6 +19,7 @@ using namespace std;
 
 void processRequests(int);
 void output(string, string, bool);
+bool debug = false;
 
 int main(int argc, char const *argv[])
 {
@@ -52,8 +54,10 @@ int main(int argc, char const *argv[])
             }
         } else if (strcmp(argv[i], "d") == 0) {
             cout << "Running in detached mode" << endl;
-        } else if (strcmp(argv[i], "s") == 0) {
+        }  else if (strcmp(argv[i], "s") == 0) {
             settings.setSilent(true); 
+        } else if (strcmp(argv[i], "debug") == 0) {
+            debug = true; 
         } else if (strcmp(argv[i], "help") == 0) {
             cout << "Printing out help screen" << endl;
         }
@@ -137,7 +141,7 @@ void processRequests(int id) {
     char buffer[2048];
 
     while (strcmp("QUIT", buffer) != 0) {
-        cout << "Start of while loop" << endl;
+        output("DEBUG", "Start of while loop", !debug);
         varlist list;
         bzero(buffer,2048);
         int n = read(id,buffer,2047);
@@ -154,21 +158,13 @@ void processRequests(int id) {
         // get the variables out
         int pos = message.find('}');
         while(pos > 0) {
-            //cout << "Variable" << endl;
             string object = message.substr(0, pos+1);
-            //cout << object << endl;
             variable *temp = new variable(object);
-            //temp->printVar();
             list.add(temp);
             
-            //cout << "==========" << endl;
             message = message.substr(pos+2, message.length());
             pos = message.find('}');
         }
-
-        //cout << "TESTING TO FIND VARIABLE IN LIST" << endl << flush;
-        //variable* test = list.find("x");
-        //test->printVar();
 
         //get the calucaltions out
         pos = message.find(';');
@@ -188,9 +184,14 @@ void processRequests(int id) {
                 string o1 = object.substr(0, space);
                 object = object.substr(space+1, object.length());
               
+                space = object.find(' '); 
                 string o2 = object.substr(0, space);
                 object = object.substr(space+1, object.length());
                 string result = object;
+
+                ostringstream convert;
+                convert << "Variable(" << o1 << ":" << o2 << ":" << result << ")";
+                output("DEBUG", convert.str(), !debug);
 
                 variable* op1 = list.find(o1);
                 variable* op2 = list.find(o2);
@@ -213,8 +214,12 @@ void processRequests(int id) {
         //Sends the result back
         int result = write(id, returnVal.c_str(), returnVal.length());
         if (n < 0) output("ERROR", "ERROR writing socket", false);
-        cout << "End of while loop" << endl;
+        output("DEBUG", "End of while loop", !debug);
+        message = "VODDO";
     }
+
+    output("DEBUG", "Out of while loop", !debug);
+    
 
     output("ProcessRequest", "Closing Connection", false);
     close(id);
@@ -239,6 +244,6 @@ void output(string _location, string _message, bool _silent) {
 
         strftime(buffer, 80, "%F %T", timeinfo);
 
-        cout << buffer << " [" << _location << "] " << _message << endl; 
+        cout << buffer << " [" << _location << "] " << _message << flush << endl; 
     }
 }
