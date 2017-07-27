@@ -28,10 +28,8 @@ void mul::execute() {
 	for (int i = 0; i < length; ++i)
 	{
 		finalValues[i] = operant1->getValue(i) * operant2->getValue(i);
-		//cout << i << " " << finalValues[i] << endl;
 	}
 
-	//strdelete result;
 	result->setRank(finalRank);
 	result->setDimensions(finalDimensions);
 	result->setValues(finalValues);
