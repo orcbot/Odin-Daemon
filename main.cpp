@@ -1,5 +1,8 @@
 //@todo add better comments
 #include "lib/calculations/add.h"
+#include "lib/calculations/dot.h"
+#include "lib/calculations/sub.h"
+#include "lib/calculations/mult.h"
 #include "lib/helper/config.h"
 #include "lib/variables/variable.h"
 #include "lib/varList/varlist.h"
@@ -198,11 +201,76 @@ void processRequests(int id) {
                 variable* res = list.find(result);
                 add temp(op1, op2, res);
                 temp.execute();
-
-                cout << "We've added some shit together" << endl;
                 cout << res->toJSON() << endl;
             } else if (op.compare("SUB") == 0) {
-                cout << "We are gonna subtract some shit" << endl;
+                space = message.find(' '); 
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' '); 
+                string o1 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+              
+                space = object.find(' '); 
+                string o2 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+                string result = object;
+
+                ostringstream convert;
+                convert << "Variable(" << o1 << ":" << o2 << ":" << result << ")";
+                output("DEBUG", convert.str(), !debug);
+
+                variable* op1 = list.find(o1);
+                variable* op2 = list.find(o2);
+                variable* res = list.find(result);
+                sub temp(op1, op2, res);
+                temp.execute();
+                cout << res->toJSON() << endl;
+            } else if (op.compare("DOT") == 0) {
+                space = message.find(' '); 
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' '); 
+                string o1 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+              
+                space = object.find(' '); 
+                string o2 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+                string result = object;
+
+                ostringstream convert;
+                convert << "Variable(" << o1 << ":" << o2 << ":" << result << ")";
+                output("DEBUG", convert.str(), !debug);
+
+                variable* op1 = list.find(o1);
+                variable* op2 = list.find(o2);
+                variable* res = list.find(result);
+                dot temp(op1, op2, res);
+                temp.execute();
+                cout << res->toJSON() << endl;
+            } else if (op.compare("MUL") == 0) {
+                space = message.find(' '); 
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' '); 
+                string o1 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+              
+                space = object.find(' '); 
+                string o2 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+                string result = object;
+
+                ostringstream convert;
+                convert << "Variable(" << o1 << ":" << o2 << ":" << result << ")";
+                output("DEBUG", convert.str(), !debug);
+
+                variable* op1 = list.find(o1);
+                variable* op2 = list.find(o2);
+                variable* res = list.find(result);
+                mult temp(op1, op2, res);
+                temp.execute();
+                cout << res->toJSON() << endl;
             }
 
             message = message.substr(pos+1, message.length());
