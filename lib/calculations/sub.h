@@ -1,18 +1,18 @@
-#ifndef ADD_H
-#define ADD_H
+#ifndef SUB_H
+#define SUB_H
 
 #include "calc.h"
 #include "../variables/variable.h"
 
-class add : public calc {
+class sub : public calc {
 private:
 	variable* operant1;
 	variable* operant2;
 	variable* result;
 
 public:
-	add(variable*, variable*, variable*);
-	~add() { }
+	sub(variable*, variable*, variable*);
+	~sub() { }
 	
 	void execute();
 };

@@ -9,11 +9,20 @@ varlist::varlist() {
 }
 
 varlist::~varlist() {
-	while (head != NULL) {
-		var* temp = head;
-		head = head->next;
-		delete temp;
+	cout << "Starting DELETING" << endl;
+	var *nodePtr;
+	var *nextNode;
+	nodePtr = head;
+
+	while (nodePtr == NULL) {
+		nextNode = nodePtr->next;
+
+		delete nodePtr;
+
+		nodePtr = nextNode;
 	}
+
+	cout << "DONE DELETING" << endl;
 }
 
 void varlist::add(variable* _store) {

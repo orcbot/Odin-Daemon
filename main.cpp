@@ -1,5 +1,8 @@
 //@todo add better comments
 #include "lib/calculations/add.h"
+#include "lib/calculations/dot.h"
+#include "lib/calculations/sub.h"
+#include "lib/calculations/mult.h"
 #include "lib/helper/config.h"
 #include "lib/variables/variable.h"
 #include "lib/varList/varlist.h"
@@ -8,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sstream>
 #include <time.h>
 #include <unistd.h>
 #include <sys/types.h> 
@@ -18,6 +22,7 @@ using namespace std;
 
 void processRequests(int);
 void output(string, string, bool);
+bool debug = false;
 
 int main(int argc, char const *argv[])
 {
@@ -52,8 +57,10 @@ int main(int argc, char const *argv[])
             }
         } else if (strcmp(argv[i], "d") == 0) {
             cout << "Running in detached mode" << endl;
-        } else if (strcmp(argv[i], "s") == 0) {
+        }  else if (strcmp(argv[i], "s") == 0) {
             settings.setSilent(true); 
+        } else if (strcmp(argv[i], "debug") == 0) {
+            debug = true; 
         } else if (strcmp(argv[i], "help") == 0) {
             cout << "Printing out help screen" << endl;
         }
@@ -136,7 +143,8 @@ void processRequests(int id) {
 	//responds
     char buffer[2048];
 
-    while (strcmp("quit\n", buffer) != 0) {
+    while (strcmp("QUIT", buffer) != 0) {
+        output("DEBUG", "Start of while loop", !debug);
         varlist list;
         bzero(buffer,2048);
         int n = read(id,buffer,2047);
@@ -153,21 +161,13 @@ void processRequests(int id) {
         // get the variables out
         int pos = message.find('}');
         while(pos > 0) {
-            //cout << "Variable" << endl;
             string object = message.substr(0, pos+1);
-            //cout << object << endl;
             variable *temp = new variable(object);
-            //temp->printVar();
             list.add(temp);
             
-            //cout << "==========" << endl;
             message = message.substr(pos+2, message.length());
             pos = message.find('}');
         }
-
-        //cout << "TESTING TO FIND VARIABLE IN LIST" << endl << flush;
-        //variable* test = list.find("x");
-        //test->printVar();
 
         //get the calucaltions out
         pos = message.find(';');
@@ -175,29 +175,119 @@ void processRequests(int id) {
             cout << "Instructions" << endl;
             string object = message.substr(0, pos);
             cout << object << endl;
-            string op = message.substr(0, message.find(' '));
+            int space = message.find(' ');
+            string op = object.substr(0, space);
 
             if (op.compare("SUM") == 0) {
                 //Will pull out the variable names
-                variable* op1 = list.find("x");
-                variable* res = list.find("y");
-                add temp(op1, op1, res);
-                res = temp.execute();
+                space = message.find(' '); 
+            	object = object.substr(space+1, object.length());
 
-                cout << "We've added some shit together" << endl;
+                space = object.find(' '); 
+                string o1 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+              
+                space = object.find(' '); 
+                string o2 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+                string result = object;
+
+                ostringstream convert;
+                convert << "Variable(" << o1 << ":" << o2 << ":" << result << ")";
+                output("DEBUG", convert.str(), !debug);
+
+                variable* op1 = list.find(o1);
+                variable* op2 = list.find(o2);
+                variable* res = list.find(result);
+                add temp(op1, op2, res);
+                temp.execute();
                 cout << res->toJSON() << endl;
             } else if (op.compare("SUB") == 0) {
-                cout << "We are gonna subtract some shit" << endl;
+                space = message.find(' '); 
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' '); 
+                string o1 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+              
+                space = object.find(' '); 
+                string o2 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+                string result = object;
+
+                ostringstream convert;
+                convert << "Variable(" << o1 << ":" << o2 << ":" << result << ")";
+                output("DEBUG", convert.str(), !debug);
+
+                variable* op1 = list.find(o1);
+                variable* op2 = list.find(o2);
+                variable* res = list.find(result);
+                sub temp(op1, op2, res);
+                temp.execute();
+                cout << res->toJSON() << endl;
+            } else if (op.compare("DOT") == 0) {
+                space = message.find(' '); 
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' '); 
+                string o1 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+              
+                space = object.find(' '); 
+                string o2 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+                string result = object;
+
+                ostringstream convert;
+                convert << "Variable(" << o1 << ":" << o2 << ":" << result << ")";
+                output("DEBUG", convert.str(), !debug);
+
+                variable* op1 = list.find(o1);
+                variable* op2 = list.find(o2);
+                variable* res = list.find(result);
+                dot temp(op1, op2, res);
+                temp.execute();
+                cout << res->toJSON() << endl;
+            } else if (op.compare("MUL") == 0) {
+                space = message.find(' '); 
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' '); 
+                string o1 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+              
+                space = object.find(' '); 
+                string o2 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+                string result = object;
+
+                ostringstream convert;
+                convert << "Variable(" << o1 << ":" << o2 << ":" << result << ")";
+                output("DEBUG", convert.str(), !debug);
+
+                variable* op1 = list.find(o1);
+                variable* op2 = list.find(o2);
+                variable* res = list.find(result);
+                mult temp(op1, op2, res);
+                temp.execute();
+                cout << res->toJSON() << endl;
             }
 
             message = message.substr(pos+1, message.length());
             pos = message.find(';');
         }
 
+        string returnVal = list.find("result")->toJSON();
+
         //Sends the result back
-        int result = write(id, "RECIEVED", 8);
+        int result = write(id, returnVal.c_str(), returnVal.length());
         if (n < 0) output("ERROR", "ERROR writing socket", false);
+        output("DEBUG", "End of while loop", !debug);
+        message = "VODDO";
     }
+
+    output("DEBUG", "Out of while loop", !debug);
+    
 
     output("ProcessRequest", "Closing Connection", false);
     close(id);
@@ -222,6 +312,6 @@ void output(string _location, string _message, bool _silent) {
 
         strftime(buffer, 80, "%F %T", timeinfo);
 
-        cout << buffer << " [" << _location << "] " << _message << endl; 
+        cout << buffer << " [" << _location << "] " << _message << flush << endl; 
     }
 }

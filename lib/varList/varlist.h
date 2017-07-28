@@ -16,13 +16,17 @@ private:
 	class var {
 	public:
 		var() { next = NULL; obj = NULL; }
-		~var() { 
+		~var() {
+			cout << "[VAR(A)]" << flush;
 			if (next != NULL) {
+				cout << "[VAR(B)]" << flush;	
 				delete next;
 			}
 			if (obj != NULL) {
+				cout << "[VAR(C)]" << flush;	
 				delete obj;
 			}
+			cout << "[VAR(D)]" << flush;	
 		}
 		var* next;
 		variable* obj;

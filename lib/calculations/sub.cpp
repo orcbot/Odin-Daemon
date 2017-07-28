@@ -1,14 +1,14 @@
-#include "add.h"
+#include "sub.h"
 
-add::add(variable* _op1, variable* _op2, variable* _result) {
+sub::sub(variable* _op1, variable* _op2, variable* _result) {
 	operant1 = _op1;
 	operant2 = _op2;
 	result = _result;
 }
 
-void add::execute() {
+void sub::execute() {
 	if (operant1->getRank() != operant2->getRank()) {
-		throw "Error: Bitch these ranks aren't even the same";
+		throw "Error: Unequal operand ranks!";
 	}
 
 	int finalRank = operant1->getRank();
@@ -17,7 +17,7 @@ void add::execute() {
 
 	for (int i = 0; i < finalRank; ++i) {
 		if (operant1->getDimension(i) != operant2->getDimension(i)) {
-			throw "Error: Bitch these dimensions aren't even the same";
+			throw "Error: Unequal operand dimensions!";
 		}
 		finalDimensions[i] = operant1->getDimension(i);
 		length *= finalDimensions[i];
@@ -27,11 +27,9 @@ void add::execute() {
 
 	for (int i = 0; i < length; ++i)
 	{
-		finalValues[i] = operant1->getValue(i) + operant2->getValue(i);
-		//cout << i << " " << finalValues[i] << endl;
+		finalValues[i] = operant1->getValue(i) - operant2->getValue(i);
 	}
 
-	//strdelete result;
 	result->setRank(finalRank);
 	result->setDimensions(finalDimensions);
 	result->setValues(finalValues);
