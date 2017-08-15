@@ -1,0 +1,4 @@
+dist: trusty
+language: cpp
+compiler: gcc
+script: "exit 0"
