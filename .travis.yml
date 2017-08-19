@@ -1,4 +1,7 @@
 dist: trusty
 language: cpp
 compiler: gcc
+before_script:
+  - install.sh
+
 script: "exit 0"
