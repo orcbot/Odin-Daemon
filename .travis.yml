@@ -3,6 +3,7 @@ language: cpp
 compiler: gcc
 before_script:
   - ./install.sh
+  - cmake CMakeLists.txt
 
 script: "exit 0"
 sudo: required
