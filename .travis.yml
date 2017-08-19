@@ -1,4 +1,10 @@
 dist: trusty
 language: cpp
 compiler: gcc
-script: "exit 0"
+before_script:
+  - ./install.sh
+  - cmake CMakeLists.txt
+  - make
+
+script: ./runTests
+sudo: required
