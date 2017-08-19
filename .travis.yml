@@ -4,6 +4,7 @@ compiler: gcc
 before_script:
   - ./install.sh
   - cmake CMakeLists.txt
+  - make
 
-script: "exit 0"
+script: ./runTests
 sudo: required
