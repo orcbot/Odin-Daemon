@@ -6,5 +6,5 @@ before_script:
   - cmake CMakeLists.txt
   - make
 
-script: ./runTests
+script: ./runTests.out
 sudo: required
