@@ -3,8 +3,8 @@ language: cpp
 compiler: gcc
 before_script:
   - ./install.sh
-  - cmake CMakeLists.txt
-  - make
+  - cmake .
+  - make runTests.out
 
 script: ./runTests.out
 sudo: required
