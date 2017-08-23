@@ -159,13 +159,13 @@ TEST_F(VariableListTest, Reset) {
   vars.add(y);
   vars.add(w);
   /* @todo
-    Condition #1:
+    Condition #5:
     Description:
     Expected:       Will not throw an error
   */
   EXPECT_NO_THROW(vars.reset());
   /* @todo
-    Condition #2:
+    Condition #6:
     Description:
     Expected:       Will return 1
   */
@@ -181,13 +181,13 @@ TEST_F(VariableListTest, Reset) {
   vars.add(w);
   vars.add(x);
   /* @todo
-    Condition #1:
+    Condition #7:
     Description:
     Expected:       Will not throw an error
   */
   EXPECT_NO_THROW(vars.reset());
   /* @todo
-    Condition #2:
+    Condition #8:
     Description:
     Expected:       Will return 1
   */
