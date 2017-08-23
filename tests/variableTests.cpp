@@ -229,15 +229,9 @@ TEST_F(VariableTest, Updates) {
     Description:
     Expected:
   */
-  //EXPECT_THROW(y->setName(NULL), NoNameError);
-  /*
-    Condition #3:
-    Description:
-    Expected:
-  */
   EXPECT_NO_THROW(y->setName("potter"));
   /*
-    Condition #4:
+    Condition #3:
     Description:
     Expected:
   */
