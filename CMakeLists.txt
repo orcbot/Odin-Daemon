@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 2.6)
 
 set (CMAKE_CXX_STANDARD 11)
 
-# # Locate GTest
-# find_package(GTest REQUIRED)
-# include_directories(${GTEST_INCLUDE_DIRS})
+# Locate GTest
+find_package(GTest REQUIRED)
+include_directories(${GTEST_INCLUDE_DIRS})
 
 #include variable
 include_directories ("${PROJECT_SOURCE_DIR}/lib/variables")
@@ -50,9 +50,9 @@ set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/mul)
 # add_subdirectory (lib/calculations)
 # set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/dot)
 
-# # Link runTests with what we want to test and the GTest and pthread library
-# add_executable(runTests.out tests/main.cpp ${EXTRA_LIBS})
-# target_link_libraries(runTests.out ${GTEST_LIBRARIES} pthread)
+# Link runTests with what we want to test and the GTest and pthread library
+add_executable(runTests.out tests/main.cpp ${EXTRA_LIBS})
+target_link_libraries(runTests.out ${GTEST_LIBRARIES} pthread)
 
 # Link runTests with what we want to test and the GTest and pthread library
 add_executable(Odin.out main.cpp ${EXTRA_LIBS})
