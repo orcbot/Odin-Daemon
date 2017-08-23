@@ -1,17 +1,28 @@
-# To build use:
-# docker build -t orian/cppenv:v1 .
-FROM ubuntu:17.10
+# Base image
+FROM library/ubuntu:17.10
+
+# Maintainer
 MAINTAINER Compiax (Pty) Ltd. <admin@compiax.io>
 
-LABEL description="Odin-Daemon."
+# Updating repositories.
+RUN \
+  apt-get clean && \
+  apt-get update
 
-# Install dependencies
-RUN apt-get update
+RUN apt-get install -y \
+  g++ \
+  cmake \
+  libgtest-dev && \
+rm -rf /var/lib/apt/lists/*
 
-RUN apt-get -y install g++ cmake git subversion
+RUN \
+  cd /usr/src/gtest && \
+  cmake CMakeLists.txt && \
+  make && \
+  cp *.a /usr/lib
 
 # Set Workdir
-WORKDIR /home/odin/daemon
+WORKDIR /opt/odin/daemon
 
 # Expose ports
 EXPOSE 8000
@@ -19,6 +30,8 @@ EXPOSE 8000
 # Get source
 COPY . .
 
-RUN cmake . && make Odin.out
+# Entrypoint
+ENTRYPOINT ["sh", "entrypoint.sh"]
 
+# Command
 CMD ["./Odin.out"]

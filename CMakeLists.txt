@@ -30,26 +30,6 @@ set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/dot)
 set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/mult)
 set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/mul)
 
-# #include sub
-# include_directories ("${PROJECT_SOURCE_DIR}/lib/calculations/sub")
-# add_subdirectory (lib/calculations)
-# set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/sub)
-
-# #include mul
-# include_directories ("${PROJECT_SOURCE_DIR}/lib/calculations/mul")
-# add_subdirectory (lib/calculations)
-# set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/mul)
-
-# #include mult
-# include_directories ("${PROJECT_SOURCE_DIR}/lib/calculations/mult")
-# add_subdirectory (lib/calculations)
-# set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/mult)
-
-# #include dot
-# include_directories ("${PROJECT_SOURCE_DIR}/lib/calculations/dot")
-# add_subdirectory (lib/calculations)
-# set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/dot)
-
 # Link runTests with what we want to test and the GTest and pthread library
 add_executable(runTests.out tests/main.cpp ${EXTRA_LIBS})
 target_link_libraries(runTests.out ${GTEST_LIBRARIES} pthread)

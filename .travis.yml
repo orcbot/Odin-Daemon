@@ -3,8 +3,26 @@ language: cpp
 compiler: gcc
 before_script:
   - ./install.sh
-  - cmake CMakeLists.txt
-  - make
+  - cmake .
+  - make runTests.out
 
-script: ./runTests
+script: ./runTests.out
 sudo: required
+
+after_script:
+   # For dev branch
+  - |
+      if [ “$TRAVIS_BRANCH” == “dev” ]; then
+        docker build -t compiax/odin-daemon:dev-latest .
+        docker tag compiax/odin-daemon:dev-latest compiax/odin-daemon:dev-latest
+        docker login -u $DOCKER_USER -p $DOCKER_PASS
+        docker push compiax/odin-daemon:dev-latest
+      fi
+  # For master branch
+  - |
+      if [ “$TRAVIS_BRANCH” == “master” ]; then
+        docker build -t compiax/odin-daemon:latest .
+        docker tag compiax/odin-daemon:latest compiax/odin-daemon:latest
+        docker login -u $DOCKER_USER -p $DOCKER_PASS
+        docker push compiax/odin-daemon:latest
+      fi
