@@ -1,4 +1,5 @@
 #include "variableTests.cpp"
+#include "varlistTest.cpp"
 #include <gtest/gtest.h>
 
 int main(int argc, char **argv) {
