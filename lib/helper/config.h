@@ -2,11 +2,16 @@
 #define CONFIG_H
 
 class config {
-private:
+  private:
+    static config* instance;
     bool silent;
     int port;
-public:
+
     config();
+
+  public:
+    static config* getInstance();
+
     void setSilent(bool);
     void setPort(int);
     bool getSilent();
