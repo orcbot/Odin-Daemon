@@ -1,4 +1,5 @@
 #include "sub.h"
+#include "../errors/calculations_error.h"
 
 sub::sub(variable* _op1, variable* _op2, variable* _result) {
 	operant1 = _op1;
@@ -8,7 +9,7 @@ sub::sub(variable* _op1, variable* _op2, variable* _result) {
 
 void sub::execute() {
 	if (operant1->getRank() != operant2->getRank()) {
-		throw "Error: Unequal operand ranks!";
+		throw RanksNotEqualError();
 	}
 
 	int finalRank = operant1->getRank();
@@ -17,7 +18,7 @@ void sub::execute() {
 
 	for (int i = 0; i < finalRank; ++i) {
 		if (operant1->getDimension(i) != operant2->getDimension(i)) {
-			throw "Error: Unequal operand dimensions!";
+			throw DimensionsNotEqualError();
 		}
 		finalDimensions[i] = operant1->getDimension(i);
 		length *= finalDimensions[i];
