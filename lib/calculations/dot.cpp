@@ -1,4 +1,5 @@
 #include "dot.h"
+#include "../errors/calculations_error.h"
 
 dot::dot(variable* _op1, variable* _op2, variable* _result) {
 	operant1 = _op1;
@@ -8,11 +9,11 @@ dot::dot(variable* _op1, variable* _op2, variable* _result) {
 
 void dot::execute() {
 	if (operant1->getRank() != 1 && operant2->getRank() != 1) {
-		throw "Error: Bitch these aren't vectors, the fuck you talking about.";
+		throw NotVectorError();
 	}
 
 	if (operant1->getDimension(0) != operant2->getDimension(0)) {
-		throw "Error: Bitch these vectors aren't the same length.";
+		throw DimensionsNotEqualError();
 	}
 
 	int finalDimensions[1];
