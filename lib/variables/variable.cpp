@@ -1,4 +1,5 @@
 #include "variable.h"
+#include "../errors/variable_error.h"
 #include "../rapidjson/stringbuffer.h"
 #include "../rapidjson/prettywriter.h"
 #include "../rapidjson/document.h"
@@ -15,50 +16,95 @@ variable::variable() {
 }
 
 variable::variable(string _json) {
-	//cout << "String " << _json << " Length " << _json.length() << endl;
-
-	//_json.append('\0');
 	rapidjson::Document jsonDoc;
 	char buffer[_json.length()];
     bzero(buffer,_json.length());
 
 	_json.copy(buffer, _json.length());
 	buffer[_json.length()] = '\0';
-	//cout << buffer << endl;
 
 	jsonDoc.ParseInsitu(buffer).HasParseError();
 
+  /*
+    Ensures that JSON object has all the correct fields and
+    ensures that all fields contain the correct data types.
+    The rapidJSON will fail if we are expecting one data type
+    and the JSON object holds another data.
+  */
 
-	assert(jsonDoc.IsObject());
-	assert(jsonDoc.HasMember("name"));
-	assert(jsonDoc.HasMember("save"));
-	assert(jsonDoc.HasMember("values"));
-	assert(jsonDoc.HasMember("rank"));
-	assert(jsonDoc.HasMember("dimensions"));
+	if (!jsonDoc.IsObject()) {
+    throw NotObjectError();
+  }
+
+	if (!jsonDoc.HasMember("name")) {
+    throw NoNameError();
+  }
+
+	if (!jsonDoc.HasMember("save")) {
+    throw NoSaveError();
+  }
+
+	if (!jsonDoc.HasMember("rank")) {
+    throw NoRankError();
+  }
+
+	if (!jsonDoc.HasMember("dimensions")) {
+    throw NoDimensionsError();
+  }
+
+  if (!jsonDoc.HasMember("values")) {
+    throw NoValuesError();
+  }
+
+  if (!jsonDoc["name"].IsString()) {
+    throw NameNotStringError();
+  }
+
+  if (!jsonDoc["save"].IsInt()) {
+    throw SaveNotBoolError();
+  }
+
+  if (!jsonDoc["rank"].IsInt()) {
+    throw RankNotInt();
+  }
+
+  if (!jsonDoc["dimensions"].IsArray()) {
+    throw DimensionsNotArray();
+  }
+
+  if (!jsonDoc["values"].IsArray()) {
+    throw ValuesNotArray();
+  }
 
 	name = jsonDoc["name"].GetString();
 	rank = jsonDoc["rank"].GetInt();
-	//save = jsonDoc["save"].GetBool() ? "true" : "false";
-	save = 0;
-
+	save = jsonDoc["save"].GetInt();
 	rapidjson::Value& dimensionsArray = jsonDoc["dimensions"];
-	assert(dimensionsArray.IsArray());
-	dimensions = new int[rank];
-	//calculatiung length of values array up here to avoid using two loops
-	int length = 1;
-
-	for (int i = 0; i < rank; ++i) {
-		dimensions[i] = dimensionsArray[i].GetInt();
-		length *= dimensions[i];
-	}
-
-	//cout << "Length " << length << endl;
-
 	rapidjson::Value& valueArray = jsonDoc["values"];
-	assert(valueArray.IsArray());
-	values = new double[length];
 
-	for (int i = 0; i < length; ++i) {
+  if (rank <= 0) {
+    throw Rank0Error();
+  }
+
+  if (rank != dimensionsArray.Size()) {
+    throw DimensionsWrongSizeError();
+  }
+
+  dimensions = new int[rank];
+   valuesLength = 1;
+
+  for (int i = 0; i < rank; ++i) {
+    dimensions[i] = dimensionsArray[i].GetInt();
+    valuesLength *= dimensions[i];
+  }
+
+  if (valuesLength != valueArray.Size()) {
+    throw ValuessWrongSizeError();
+  }
+
+	values = new double[valuesLength];
+
+	for (int i = 0; i < valuesLength; ++i) {
 		values[i] = valueArray[i].GetDouble();
 	}
 }
@@ -77,21 +123,16 @@ int variable::getRank() {
 }
 
 int variable::getDimension(int _pos) {
-	if (_pos >= rank) {
-		return -1;
+	if (_pos >= rank || _pos < 0) {
+		throw OutOfBounds();
 	}
 
 	return dimensions[_pos];
 }
 
 double variable::getValue(int _pos) {
-	int size = 1;
-	for (int i = 0; i < rank; ++i) {
-		size = size * dimensions[i];
-	}
-
-	if (_pos >= size) {
-		throw string("Oh shit this was a mistake");
+	if (_pos >= valuesLength || _pos < 0) {
+		throw OutOfBounds();
 	}
 
 	return values[_pos];
@@ -102,6 +143,10 @@ bool variable::getSave() {
 }
 
 void variable::setName(string _name) {
+  if (_name.length() == 0) {
+    throw NoNameError();
+  }
+
 	name = _name;
 }
 
@@ -131,9 +176,8 @@ void variable::setValues(double _values[]) {
 	}
 
 	values = new double[length];
-	
+
 	for (int i = 0; i < length; ++i) {
-		//cout << "CREATING " << i << " " << _values[i] << endl;
 		values[i] = _values[i];
 	}
 }

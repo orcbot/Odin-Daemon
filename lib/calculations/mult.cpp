@@ -1,4 +1,5 @@
 #include "mult.h"
+#include "../errors/calculations_error.h"
 
 mult::mult(variable* _op1, variable* _op2, variable* _result) {
 	operant1 = _op1;
@@ -8,7 +9,7 @@ mult::mult(variable* _op1, variable* _op2, variable* _result) {
 
 void mult::execute() {
 	if (operant1->getRank() != 1 && operant1->getDimension(0)) {
-		throw "Error: This isn't a scalar";
+		throw NotScalarError();
 	}
 
 	int finalRank = operant2->getRank();
