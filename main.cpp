@@ -214,6 +214,15 @@ void processRequests(int id) {
             } catch (OutOfBounds e) {
                 errorHandler(&e, id);
                 noErrors = false;
+            } catch (VariableNotFoundError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (VariableAlreadyExistsError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (VariableNotDefinedError e) {
+                errorHandler(&e, id);
+                noErrors = false;
             }
 
             list.add(temp);
@@ -231,10 +240,11 @@ void processRequests(int id) {
             int space = message.find(' ');
             string op = object.substr(0, space);
 
-            if (op.compare("SUM") == 0) {
+            try {
+              if (op.compare("SUM") == 0) {
                 //Will pull out the variable names
                 space = message.find(' ');
-            	object = object.substr(space+1, object.length());
+              	object = object.substr(space+1, object.length());
 
                 space = object.find(' ');
                 string o1 = object.substr(0, space);
@@ -255,7 +265,7 @@ void processRequests(int id) {
                 add temp(op1, op2, res);
                 temp.execute();
                 cout << res->toJSON() << endl;
-            } else if (op.compare("SUB") == 0) {
+              } else if (op.compare("SUB") == 0) {
                 space = message.find(' ');
                 object = object.substr(space+1, object.length());
 
@@ -278,7 +288,7 @@ void processRequests(int id) {
                 sub temp(op1, op2, res);
                 temp.execute();
                 cout << res->toJSON() << endl;
-            } else if (op.compare("DOT") == 0) {
+              } else if (op.compare("DOT") == 0) {
                 space = message.find(' ');
                 object = object.substr(space+1, object.length());
 
@@ -301,7 +311,7 @@ void processRequests(int id) {
                 dot temp(op1, op2, res);
                 temp.execute();
                 cout << res->toJSON() << endl;
-            } else if (op.compare("MUL") == 0) {
+              } else if (op.compare("MUL") == 0) {
                 space = message.find(' ');
                 object = object.substr(space+1, object.length());
 
@@ -324,8 +334,30 @@ void processRequests(int id) {
                 mult temp(op1, op2, res);
                 temp.execute();
                 cout << res->toJSON() << endl;
+              }
+            } catch (RanksNotEqualError e) {
+              errorHandler(&e, id);
+              noErrors = false;
+            } catch (DimensionsNotEqualError e) {
+              errorHandler(&e, id);
+              noErrors = false;
+            } catch (NotVectorError e) {
+              errorHandler(&e, id);
+              noErrors = false;
+            } catch (NotScalarError e) {
+              errorHandler(&e, id);
+              noErrors = false;
+            } catch (VariableNotFoundError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (VariableAlreadyExistsError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (VariableNotDefinedError e) {
+                errorHandler(&e, id);
+                noErrors = false;
             }
-
+            
             message = message.substr(pos+1, message.length());
             pos = message.find(';');
         }
@@ -375,5 +407,5 @@ void errorHandler(error* e, int id) {
   output("ERROR", e->getMessage(), false);
 
   int result = write(id, e->getResponse(), strlen(e->getResponse()));
-  if (result < 0) output("ERROR", "ERROR writing socket", false);
+  if (result < 0) output("ERROR", "ERROR writing socket", debug);
 }
