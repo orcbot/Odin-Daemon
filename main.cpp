@@ -4,6 +4,7 @@
 #include "lib/calculations/sub.h"
 #include "lib/calculations/mult.h"
 #include "lib/helper/config.h"
+#include "lib/helper/daemonize.h"
 #include "lib/variables/variable.h"
 #include "lib/varList/varlist.h"
 #include "lib/errors/error.h"
@@ -31,9 +32,9 @@ int main(int argc, char const *argv[])
 {
 	//Will wait for a concention, then fork off and call new function to handle requests
 	//Calls to function to read the requests and respond
-    output("Init", "Odin-daemon starting up...", false);
+    config* settings = config::getInstance();
 
-    config settings;
+    output("Init", "Odin-daemon starting up...", false);
 
     for (int i = 1; i < argc; ++i)
     {
@@ -42,13 +43,14 @@ int main(int argc, char const *argv[])
         *   p <int> (Change the default port)
         *   d (Run in detached mode)
         *   s (Silent mode, won't print updates)
+        *   d (detach mode, will detach from the terminal and run in the background)
         *   help (Get help)
         **/
-        if (strcmp(argv[i], "p") == 0) {
+        if (strcmp(argv[i], "-p") == 0) {
             if (argc > i + 1)
             {
                 int port = atoi(argv[i+1]);
-                settings.setPort(port);
+                settings->setPort(port);
                 if (port == 0)
                 {
                     cout << "Ussage: Odin p <int>" << endl;
@@ -58,19 +60,20 @@ int main(int argc, char const *argv[])
                 cout << "Ussage: Odin p <int>" << endl;
                 exit(1);
             }
-        } else if (strcmp(argv[i], "d") == 0) {
-            cout << "Running in detached mode" << endl;
-        }  else if (strcmp(argv[i], "s") == 0) {
-            settings.setSilent(true);
-        } else if (strcmp(argv[i], "debug") == 0) {
+        } else if (strcmp(argv[i], "-d") == 0) {
+            settings->setSilent(true);
+            daemonize();
+        }  else if (strcmp(argv[i], "-s") == 0) {
+            settings->setSilent(true);
+        } else if (strcmp(argv[i], "-debug") == 0) {
             debug = true;
-        } else if (strcmp(argv[i], "help") == 0) {
+        } else if (strcmp(argv[i], "-help") == 0) {
             cout << "Printing out help screen" << endl;
         }
     }
 
-    output("Init", "Configuration set up", settings.getSilent());
-    output("Init", "Port is set to " + to_string(settings.getPort()), settings.getSilent());
+    output("Init", "Configuration set up", settings->getSilent());
+    output("Init", "Port is set to " + to_string(settings->getPort()), settings->getSilent());
     //This whole section could be redone to make it better but for now it will do
     int sockfd;
     int newsockfd;
@@ -92,15 +95,15 @@ int main(int argc, char const *argv[])
 
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = INADDR_ANY;
-    serv_addr.sin_port = htons(settings.getPort());
+    serv_addr.sin_port = htons(settings->getPort());
 
     if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
         output("FATAL ERROR", "Error on binding socket, please make sure the socket is free", false);
         exit(1);
     }
 
-    output("Init", "Binded port successfully...", settings.getSilent());
-    output("Listen", "Waiting connections...", settings.getSilent());
+    output("Init", "Binded port successfully...", settings->getSilent());
+    output("Listen", "Waiting connections...", settings->getSilent());
 
     while (true) {
 	    listen(sockfd, 5);
@@ -110,9 +113,9 @@ int main(int argc, char const *argv[])
 	    if (newsockfd < 0) {
 	        output("FATAL ERROR", "Error on accept", false);
 	    }
-	    output("Listen", "Connection recieved from " + addressMessage, settings.getSilent());
+	    output("Listen", "Connection recieved from " + addressMessage, settings->getSilent());
 
-	    output("Listen", "Splitting processes...", settings.getSilent());
+	    output("Listen", "Splitting processes...", settings->getSilent());
 	    int pid = fork();
 
 	    if (pid == 0) {
@@ -123,12 +126,12 @@ int main(int argc, char const *argv[])
 	    	//Does nothing just goes back to listening
 	    } else {
 	    	//fork failed fr some reason
-	    	output("Listen", "fork() has failed for some reason....", settings.getSilent());
+	    	output("Listen", "fork() has failed for some reason....", settings->getSilent());
 	    }
 
 	}
 
-    close(sockfd);
+  close(sockfd);
 
 	return 0;
 }
@@ -152,6 +155,7 @@ void processRequests(int id) {
         bzero(buffer,2048);
         int n = read(id,buffer,2047);
         bool noErrors = true;
+      
         if (n < 0) {
             output("ERROR", "ERROR reading from socket", false);
             output("ProcessRequest", "Closing Connection", false);

@@ -20,6 +20,8 @@ set (EXTRA_LIBS ${EXTRA_LIBS} lib/varList/varlist)
 include_directories ("${PROJECT_SOURCE_DIR}/lib/helper")
 add_subdirectory (lib/helper)
 set (EXTRA_LIBS ${EXTRA_LIBS} lib/helper/config)
+set (EXTRA_LIBS ${EXTRA_LIBS} lib/helper/daemonize)
+
 
 #include add
 include_directories ("${PROJECT_SOURCE_DIR}/lib/calculations")
