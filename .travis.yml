@@ -1,0 +1,10 @@
+sudo: required
+dist: trusty
+language: cpp
+compiler: gcc
+before_script:
+  - ./install.sh
+  - cmake .
+  - make runTests.out
+
+script: ./runTests.out
