@@ -1,11 +1,13 @@
-#ifndef ERROR_H
-#define ERROR_H
+#ifndef CALCULATIONS_ERROR_H
+#define CALCULATIONS_ERROR_H
+
+#include "error.h"
 
 /*
   Custom error objects used to flag errors when preforming calculations
 */
 
-class RanksNotEqualError {
+class RanksNotEqualError : public error {
   public:
     RanksNotEqualError() {}
     ~RanksNotEqualError() {}
@@ -14,7 +16,7 @@ class RanksNotEqualError {
     virtual char* getResponse() { return "{\"errors\":[{\"status\":\"201\",\"title\":\"Ranks not equal\",\"details\":\"Unable to preform, ranks of operants are unequal\"}]}"; }
 };
 
-class DimensionsNotEqualError {
+class DimensionsNotEqualError : public error {
   public:
     DimensionsNotEqualError() {}
     ~DimensionsNotEqualError() {}
@@ -23,7 +25,7 @@ class DimensionsNotEqualError {
     virtual char* getResponse() { return "{\"errors\":[{\"status\":\"202\",\"title\":\"Dimensions not equal\",\"details\":\"Unable to preform, dimensions of operants are unequal\"}]}"; }
 };
 
-class NotVectorError {
+class NotVectorError : public error {
   public:
     NotVectorError() {}
     ~NotVectorError() {}
@@ -32,7 +34,7 @@ class NotVectorError {
     virtual char* getResponse() { return "{\"errors\":[{\"status\":\"203\",\"title\":\"Not vectors\",\"details\":\"Unable to preform, operants are not vectors\"}]}"; }
 };
 
-class NotScalarError {
+class NotScalarError : public error {
   public:
     NotScalarError() {}
     ~NotScalarError() {}

@@ -18,7 +18,7 @@ public:
   ~VariableAlreadyExistsError() { };
 
   virtual char* getMessage() { return "Variable already exists."; }
-  virtual char* getResponse() { return "{\"errors\":[{\"status\":\"302\",\"title\":\"Variable already exists",\"details\":\"Name is already used by another vairable.\"}]}"; }
+  virtual char* getResponse() { return "{\"errors\":[{\"status\":\"302\",\"title\":\"Variable already exists\",\"details\":\"Name is already used by another vairable.\"}]}"; }
 };
 
 class VariableNotDefinedError : public error {

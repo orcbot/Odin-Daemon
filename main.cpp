@@ -9,6 +9,8 @@
 #include "lib/varList/varlist.h"
 #include "lib/errors/error.h"
 #include "lib/errors/variable_error.h"
+#include "lib/errors/calculations_error.h"
+#include "lib/errors/varlist_error.h"
 #include <ctime>
 #include <iostream>
 #include <stdio.h>
@@ -155,7 +157,7 @@ void processRequests(int id) {
         bzero(buffer,2048);
         int n = read(id,buffer,2047);
         bool noErrors = true;
-      
+
         if (n < 0) {
             output("ERROR", "ERROR reading from socket", false);
             output("ProcessRequest", "Closing Connection", false);
@@ -361,7 +363,7 @@ void processRequests(int id) {
                 errorHandler(&e, id);
                 noErrors = false;
             }
-            
+
             message = message.substr(pos+1, message.length());
             pos = message.find(';');
         }

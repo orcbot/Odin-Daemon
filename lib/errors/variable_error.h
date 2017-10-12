@@ -36,7 +36,7 @@ class NoValuesError : public error {
     ~NoValuesError() {}
 
     virtual char* getMessage() { return "Variable has not values."; }
-    virtual char* getResponse() { return "{\"errors\":[{\"status\":\"104\",\"title\":\"No values",\"details\":\"No 'values' attribute provided for variable\"}]}"; }
+    virtual char* getResponse() { return "{\"errors\":[{\"status\":\"104\",\"title\":\"No values\",\"details\":\"No 'values' attribute provided for variable\"}]}"; }
 };
 
 class NoRankError : public error {
