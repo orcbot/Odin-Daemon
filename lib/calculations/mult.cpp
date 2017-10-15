@@ -8,30 +8,53 @@ mult::mult(variable* _op1, variable* _op2, variable* _result) {
 }
 
 void mult::execute() {
-	if (operant1->getRank() != 1 && operant1->getDimension(0)) {
+	if (!(operant1->getRank() == 1 && operant1->getDimension(0) == 1) && !(operant2->getRank() == 1 && operant2->getDimension(0) == 1)) {
 		throw NotScalarError();
 	}
 
-	int finalRank = operant2->getRank();
-	int finalDimensions[finalRank];
-	int length = 1;
+	if (operant1->getRank() == 1 && operant1->getDimension(0) == 1) {
+		int finalRank = operant2->getRank();
+		int finalDimensions[finalRank];
+		int length = 1;
 
-	for (int i = 0; i < finalRank; ++i) {
-		finalDimensions[i] = operant2->getDimension(i);
-		length *= finalDimensions[i];
+		for (int i = 0; i < finalRank; ++i) {
+			finalDimensions[i] = operant2->getDimension(i);
+			length *= finalDimensions[i];
+		}
+
+		double scalar = operant1->getValue(0);
+		double finalValues[length];
+
+		for (int i = 0; i < length; ++i)
+		{
+			finalValues[i] = scalar * operant2->getValue(i);
+		}
+
+		//set result
+		result->setRank(finalRank);
+		result->setDimensions(finalDimensions);
+		result->setValues(finalValues);
+	} else {
+		int finalRank = operant1->getRank();
+		int finalDimensions[finalRank];
+		int length = 1;
+
+		for (int i = 0; i < finalRank; ++i) {
+			finalDimensions[i] = operant1->getDimension(i);
+			length *= finalDimensions[i];
+		}
+
+		double scalar = operant2->getValue(0);
+		double finalValues[length];
+
+		for (int i = 0; i < length; ++i)
+		{
+			finalValues[i] = scalar * operant1->getValue(i);
+		}
+
+		//set result
+		result->setRank(finalRank);
+		result->setDimensions(finalDimensions);
+		result->setValues(finalValues);
 	}
-
-	double scalar = operant1->getValue(0);
-	double finalValues[length];
-
-	for (int i = 0; i < length; ++i)
-	{
-		finalValues[i] = scalar * operant2->getValue(i);
-		//cout << i << " " << finalValues[i] << endl;
-	}
-
-	//strdelete result;
-	result->setRank(finalRank);
-	result->setDimensions(finalDimensions);
-	result->setValues(finalValues);
 }
