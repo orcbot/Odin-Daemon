@@ -32,6 +32,11 @@ set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/dot)
 set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/mult)
 set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/mul)
 
+#include flags
+# SET(GCC_COVERAGE_COMPILE_FLAGS "-Wwrite-strings")
+# add_definitions(${GCC_COVERAGE_COMPILE_FLAGS}
+set (CMAKE_CXX_FLAGS "-Wno-write-strings")
+
 # Link runTests with what we want to test and the GTest and pthread library
 add_executable(runTests.out tests/main.cpp ${EXTRA_LIBS})
 target_link_libraries(runTests.out ${GTEST_LIBRARIES} pthread)
