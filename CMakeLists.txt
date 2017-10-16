@@ -31,6 +31,8 @@ set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/sub)
 set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/dot)
 set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/mult)
 set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/mul)
+set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/div)
+set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/abs)
 
 #include flags
 # SET(GCC_COVERAGE_COMPILE_FLAGS "-Wwrite-strings")
