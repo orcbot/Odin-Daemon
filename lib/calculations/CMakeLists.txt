@@ -15,3 +15,9 @@ install (TARGETS sub DESTINATION lib)
 
 add_library(mult mult.cpp)
 install (TARGETS mult DESTINATION lib)
+
+add_library(div div.cpp)
+install (TARGETS div DESTINATION lib)
+
+add_library(abs abs.cpp)
+install (TARGETS abs DESTINATION lib)

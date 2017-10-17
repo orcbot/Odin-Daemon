@@ -12,8 +12,8 @@ class RanksNotEqualError : public error {
     RanksNotEqualError() {}
     ~RanksNotEqualError() {}
 
-    virtual char* getMessage() { return "Tensor ranks are not equal."; }
-    virtual char* getResponse() { return "{\"errors\":[{\"status\":\"201\",\"title\":\"Ranks not equal\",\"details\":\"Unable to preform, ranks of operants are unequal\"}]}"; }
+    virtual char* getMessage() { return (char *)"Tensor ranks are not equal."; }
+    virtual char* getResponse() { return (char *)"{\"errors\":[{\"status\":\"201\",\"title\":\"Ranks not equal\",\"details\":\"Unable to preform, ranks of operants are unequal\"}]}"; }
 };
 
 class DimensionsNotEqualError : public error {
@@ -21,8 +21,8 @@ class DimensionsNotEqualError : public error {
     DimensionsNotEqualError() {}
     ~DimensionsNotEqualError() {}
 
-    virtual char* getMessage() { return "Tensor dimensions are not equal."; }
-    virtual char* getResponse() { return "{\"errors\":[{\"status\":\"202\",\"title\":\"Dimensions not equal\",\"details\":\"Unable to preform, dimensions of operants are unequal\"}]}"; }
+    virtual char* getMessage() { return (char *)"Tensor dimensions are not equal."; }
+    virtual char* getResponse() { return (char *)"{\"errors\":[{\"status\":\"202\",\"title\":\"Dimensions not equal\",\"details\":\"Unable to preform, dimensions of operants are unequal\"}]}"; }
 };
 
 class NotVectorError : public error {
@@ -30,8 +30,8 @@ class NotVectorError : public error {
     NotVectorError() {}
     ~NotVectorError() {}
 
-    virtual char* getMessage() { return "Operants are not vectors."; }
-    virtual char* getResponse() { return "{\"errors\":[{\"status\":\"203\",\"title\":\"Not vectors\",\"details\":\"Unable to preform, operants are not vectors\"}]}"; }
+    virtual char* getMessage() { return (char *)"Operants are not vectors."; }
+    virtual char* getResponse() { return (char *)"{\"errors\":[{\"status\":\"203\",\"title\":\"Not vectors\",\"details\":\"Unable to preform, operants are not vectors\"}]}"; }
 };
 
 class NotScalarError : public error {
@@ -39,8 +39,8 @@ class NotScalarError : public error {
     NotScalarError() {}
     ~NotScalarError() {}
 
-    virtual char* getMessage() { return "Operant 1 is not a scalar."; }
-    virtual char* getResponse() { return "{\"errors\":[{\"status\":\"204\",\"title\":\"Not scalar\",\"details\":\"Unable to preform, neither operant is a scalar\"}]}"; }
+    virtual char* getMessage() { return (char *)"Operant 1 is not a scalar."; }
+    virtual char* getResponse() { return (char *)"{\"errors\":[{\"status\":\"204\",\"title\":\"Not scalar\",\"details\":\"Unable to preform, neither operant is a scalar\"}]}"; }
 };
 
 #endif

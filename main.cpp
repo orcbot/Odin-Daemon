@@ -1,6 +1,8 @@
 //@todo add better comments
+#include "lib/calculations/abs.h"
 #include "lib/calculations/add.h"
 #include "lib/calculations/dot.h"
+#include "lib/calculations/div.h"
 #include "lib/calculations/sub.h"
 #include "lib/calculations/mult.h"
 #include "lib/helper/config.h"
@@ -166,10 +168,19 @@ void processRequests(int id) {
         }
 
         string message(buffer);
-        cout << message;
+        // cout << message;
+        int pos = message.find("QUIT");
+        if (pos == 0) {
+          output("DEBUG", "Out of processing", !debug);
+
+
+          output("ProcessRequest", "Closing Connection", false);
+          close(id);
+          exit(0);
+        }
 
         // get the variables out
-        int pos = message.find('}');
+        pos = message.find('}');
         while(pos > 0 && noErrors) {
             string object = message.substr(0, pos+1);
             variable *temp;
@@ -338,6 +349,47 @@ void processRequests(int id) {
                 variable* op2 = list.find(o2);
                 variable* res = list.find(result);
                 mult temp(op1, op2, res);
+                temp.execute();
+                cout << res->toJSON() << endl;
+              } else if (op.compare("DIV") == 0) {
+                space = message.find(' ');
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' ');
+                string o1 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' ');
+                string o2 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+                string result = object;
+
+                ostringstream convert;
+                convert << "Variable(" << o1 << ":" << o2 << ":" << result << ")";
+                output("DEBUG", convert.str(), !debug);
+
+                variable* op1 = list.find(o1);
+                variable* op2 = list.find(o2);
+                variable* res = list.find(result);
+                sdiv temp(op1, op2, res);
+                temp.execute();
+                cout << res->toJSON() << endl;
+              } else if (op.compare("ABS") == 0) {
+                space = message.find(' ');
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' ');
+                string o1 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+                string result = object;
+
+                ostringstream convert;
+                convert << "Variable(" << o1 << ":" << result << ")";
+                output("DEBUG", convert.str(), !debug);
+
+                variable* op1 = list.find(o1);
+                variable* res = list.find(result);
+                absolute temp(op1, res);
                 temp.execute();
                 cout << res->toJSON() << endl;
               }
