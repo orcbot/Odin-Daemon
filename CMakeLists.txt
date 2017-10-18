@@ -33,6 +33,10 @@ set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/mult)
 set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/mul)
 set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/div)
 set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/abs)
+set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/transpose)
+set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/sin)
+set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/cos)
+set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/sqrt)
 
 #include flags
 # SET(GCC_COVERAGE_COMPILE_FLAGS "-Wwrite-strings")

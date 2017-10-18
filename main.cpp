@@ -5,6 +5,10 @@
 #include "lib/calculations/div.h"
 #include "lib/calculations/sub.h"
 #include "lib/calculations/mult.h"
+#include "lib/calculations/transpose.h"
+#include "lib/calculations/sin.h"
+#include "lib/calculations/cos.h"
+#include "lib/calculations/sqrt.h"
 #include "lib/helper/config.h"
 #include "lib/helper/daemonize.h"
 #include "lib/variables/variable.h"
@@ -390,6 +394,78 @@ void processRequests(int id) {
                 variable* op1 = list.find(o1);
                 variable* res = list.find(result);
                 absolute temp(op1, res);
+                temp.execute();
+                cout << res->toJSON() << endl;
+              } else if (op.compare("TRANSPOSE") == 0) {
+                space = message.find(' ');
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' ');
+                string o1 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+                string result = object;
+
+                ostringstream convert;
+                convert << "Variable(" << o1 << ":" << result << ")";
+                output("DEBUG", convert.str(), !debug);
+
+                variable* op1 = list.find(o1);
+                variable* res = list.find(result);
+                transpose temp(op1, res);
+                temp.execute();
+                cout << res->toJSON() << endl;
+              } else if (op.compare("SIN") == 0) {
+                space = message.find(' ');
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' ');
+                string o1 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+                string result = object;
+
+                ostringstream convert;
+                convert << "Variable(" << o1 << ":" << result << ")";
+                output("DEBUG", convert.str(), !debug);
+
+                variable* op1 = list.find(o1);
+                variable* res = list.find(result);
+                sinFunction temp(op1, res);
+                temp.execute();
+                cout << res->toJSON() << endl;
+              } else if (op.compare("COS") == 0) {
+                space = message.find(' ');
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' ');
+                string o1 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+                string result = object;
+
+                ostringstream convert;
+                convert << "Variable(" << o1 << ":" << result << ")";
+                output("DEBUG", convert.str(), !debug);
+
+                variable* op1 = list.find(o1);
+                variable* res = list.find(result);
+                cosFunction temp(op1, res);
+                temp.execute();
+                cout << res->toJSON() << endl;
+              } else if (op.compare("SQRT") == 0) {
+                space = message.find(' ');
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' ');
+                string o1 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+                string result = object;
+
+                ostringstream convert;
+                convert << "Variable(" << o1 << ":" << result << ")";
+                output("DEBUG", convert.str(), !debug);
+
+                variable* op1 = list.find(o1);
+                variable* res = list.find(result);
+                squareRoot temp(op1, res);
                 temp.execute();
                 cout << res->toJSON() << endl;
               }
