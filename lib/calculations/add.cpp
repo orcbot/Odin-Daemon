@@ -1,4 +1,5 @@
 #include "add.h"
+#include "../errors/calculations_error.h"
 
 add::add(variable* _op1, variable* _op2, variable* _result) {
 	operant1 = _op1;
@@ -8,7 +9,7 @@ add::add(variable* _op1, variable* _op2, variable* _result) {
 
 void add::execute() {
 	if (operant1->getRank() != operant2->getRank()) {
-		throw "Error: Bitch these ranks aren't even the same";
+		throw RanksNotEqualError();
 	}
 
 	int finalRank = operant1->getRank();
@@ -17,7 +18,7 @@ void add::execute() {
 
 	for (int i = 0; i < finalRank; ++i) {
 		if (operant1->getDimension(i) != operant2->getDimension(i)) {
-			throw "Error: Bitch these dimensions aren't even the same";
+			throw DimensionsNotEqualError();
 		}
 		finalDimensions[i] = operant1->getDimension(i);
 		length *= finalDimensions[i];

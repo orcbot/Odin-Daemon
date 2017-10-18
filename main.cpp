@@ -1,11 +1,22 @@
 //@todo add better comments
+#include "lib/calculations/abs.h"
 #include "lib/calculations/add.h"
 #include "lib/calculations/dot.h"
+#include "lib/calculations/div.h"
 #include "lib/calculations/sub.h"
 #include "lib/calculations/mult.h"
+#include "lib/calculations/transpose.h"
+#include "lib/calculations/sin.h"
+#include "lib/calculations/cos.h"
+#include "lib/calculations/sqrt.h"
 #include "lib/helper/config.h"
+#include "lib/helper/daemonize.h"
 #include "lib/variables/variable.h"
 #include "lib/varList/varlist.h"
+#include "lib/errors/error.h"
+#include "lib/errors/variable_error.h"
+#include "lib/errors/calculations_error.h"
+#include "lib/errors/varlist_error.h"
 #include <ctime>
 #include <iostream>
 #include <stdio.h>
@@ -14,7 +25,7 @@
 #include <sstream>
 #include <time.h>
 #include <unistd.h>
-#include <sys/types.h> 
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -22,30 +33,32 @@ using namespace std;
 
 void processRequests(int);
 void output(string, string, bool);
+void errorHandler(error*, int);
 bool debug = false;
 
 int main(int argc, char const *argv[])
 {
 	//Will wait for a concention, then fork off and call new function to handle requests
 	//Calls to function to read the requests and respond
+    config* settings = config::getInstance();
+
     output("Init", "Odin-daemon starting up...", false);
 
-    config settings;
-
     for (int i = 1; i < argc; ++i)
-    {   
+    {
         /**
         *Current options
         *   p <int> (Change the default port)
         *   d (Run in detached mode)
         *   s (Silent mode, won't print updates)
+        *   d (detach mode, will detach from the terminal and run in the background)
         *   help (Get help)
-        **/        
-        if (strcmp(argv[i], "p") == 0) {
+        **/
+        if (strcmp(argv[i], "-p") == 0) {
             if (argc > i + 1)
             {
                 int port = atoi(argv[i+1]);
-                settings.setPort(port);
+                settings->setPort(port);
                 if (port == 0)
                 {
                     cout << "Ussage: Odin p <int>" << endl;
@@ -55,19 +68,20 @@ int main(int argc, char const *argv[])
                 cout << "Ussage: Odin p <int>" << endl;
                 exit(1);
             }
-        } else if (strcmp(argv[i], "d") == 0) {
-            cout << "Running in detached mode" << endl;
-        }  else if (strcmp(argv[i], "s") == 0) {
-            settings.setSilent(true); 
-        } else if (strcmp(argv[i], "debug") == 0) {
-            debug = true; 
-        } else if (strcmp(argv[i], "help") == 0) {
+        } else if (strcmp(argv[i], "-d") == 0) {
+            settings->setSilent(true);
+            daemonize();
+        }  else if (strcmp(argv[i], "-s") == 0) {
+            settings->setSilent(true);
+        } else if (strcmp(argv[i], "-debug") == 0) {
+            debug = true;
+        } else if (strcmp(argv[i], "-help") == 0) {
             cout << "Printing out help screen" << endl;
         }
     }
 
-    output("Init", "Configuration set up", settings.getSilent());
-    output("Init", "Port is set to " + to_string(settings.getPort()), settings.getSilent());
+    output("Init", "Configuration set up", settings->getSilent());
+    output("Init", "Port is set to " + to_string(settings->getPort()), settings->getSilent());
     //This whole section could be redone to make it better but for now it will do
     int sockfd;
     int newsockfd;
@@ -86,18 +100,18 @@ int main(int argc, char const *argv[])
     }
 
     bzero((char *) &serv_addr, sizeof(serv_addr));
-    
+
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = INADDR_ANY;
-    serv_addr.sin_port = htons(settings.getPort());
+    serv_addr.sin_port = htons(settings->getPort());
 
-    if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {  
+    if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
         output("FATAL ERROR", "Error on binding socket, please make sure the socket is free", false);
         exit(1);
     }
 
-    output("Init", "Binded port successfully...", settings.getSilent());
-    output("Listen", "Waiting connections...", settings.getSilent());
+    output("Init", "Binded port successfully...", settings->getSilent());
+    output("Listen", "Waiting connections...", settings->getSilent());
 
     while (true) {
 	    listen(sockfd, 5);
@@ -107,9 +121,9 @@ int main(int argc, char const *argv[])
 	    if (newsockfd < 0) {
 	        output("FATAL ERROR", "Error on accept", false);
 	    }
-	    output("Listen", "Connection recieved from " + addressMessage, settings.getSilent());
+	    output("Listen", "Connection recieved from " + addressMessage, settings->getSilent());
 
-	    output("Listen", "Splitting processes...", settings.getSilent());
+	    output("Listen", "Splitting processes...", settings->getSilent());
 	    int pid = fork();
 
 	    if (pid == 0) {
@@ -120,12 +134,12 @@ int main(int argc, char const *argv[])
 	    	//Does nothing just goes back to listening
 	    } else {
 	    	//fork failed fr some reason
-	    	output("Listen", "fork() has failed for some reason....", settings.getSilent());
+	    	output("Listen", "fork() has failed for some reason....", settings->getSilent());
 	    }
 
 	}
 
-    close(sockfd);
+  close(sockfd);
 
 	return 0;
 }
@@ -133,7 +147,7 @@ int main(int argc, char const *argv[])
 /**
 *   Method which will be called for each new connection. This
 *   method will keep reading instructions, processing the instructions
-*   and returning a result, until such time as it is told to close 
+*   and returning a result, until such time as it is told to close
 *   the connection.
 **/
 
@@ -148,7 +162,9 @@ void processRequests(int id) {
         varlist list;
         bzero(buffer,2048);
         int n = read(id,buffer,2047);
-        if (n < 0) { 
+        bool noErrors = true;
+
+        if (n < 0) {
             output("ERROR", "ERROR reading from socket", false);
             output("ProcessRequest", "Closing Connection", false);
             close(id);
@@ -156,38 +172,106 @@ void processRequests(int id) {
         }
 
         string message(buffer);
-        cout << message;
+        // cout << message;
+        int pos = message.find("QUIT");
+        if (pos == 0) {
+          output("DEBUG", "Out of processing", !debug);
+
+
+          output("ProcessRequest", "Closing Connection", false);
+          close(id);
+          exit(0);
+        }
 
         // get the variables out
-        int pos = message.find('}');
-        while(pos > 0) {
+        pos = message.find('}');
+        while(pos > 0 && noErrors) {
             string object = message.substr(0, pos+1);
-            variable *temp = new variable(object);
+            variable *temp;
+            try {
+              temp = new variable(object);
+            } catch (NotObjectError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (NoNameError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (NoSaveError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (NoValuesError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (NoRankError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (NoDimensionsError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (NameNotStringError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (SaveNotBoolError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (RankNotInt e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (DimensionsNotArray e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (ValuesNotArray e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (DimensionsWrongSizeError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (ValuessWrongSizeError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (Rank0Error e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (OutOfBounds e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (VariableNotFoundError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (VariableAlreadyExistsError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (VariableNotDefinedError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            }
+
             list.add(temp);
-            
+
             message = message.substr(pos+2, message.length());
             pos = message.find('}');
         }
 
         //get the calucaltions out
         pos = message.find(';');
-        while(pos > 0) {
+        while(pos > 0 && noErrors) {
             cout << "Instructions" << endl;
             string object = message.substr(0, pos);
             cout << object << endl;
             int space = message.find(' ');
             string op = object.substr(0, space);
 
-            if (op.compare("SUM") == 0) {
+            try {
+              if (op.compare("SUM") == 0) {
                 //Will pull out the variable names
-                space = message.find(' '); 
-            	object = object.substr(space+1, object.length());
+                space = message.find(' ');
+              	object = object.substr(space+1, object.length());
 
-                space = object.find(' '); 
+                space = object.find(' ');
                 string o1 = object.substr(0, space);
                 object = object.substr(space+1, object.length());
-              
-                space = object.find(' '); 
+
+                space = object.find(' ');
                 string o2 = object.substr(0, space);
                 object = object.substr(space+1, object.length());
                 string result = object;
@@ -202,15 +286,15 @@ void processRequests(int id) {
                 add temp(op1, op2, res);
                 temp.execute();
                 cout << res->toJSON() << endl;
-            } else if (op.compare("SUB") == 0) {
-                space = message.find(' '); 
+              } else if (op.compare("SUB") == 0) {
+                space = message.find(' ');
                 object = object.substr(space+1, object.length());
 
-                space = object.find(' '); 
+                space = object.find(' ');
                 string o1 = object.substr(0, space);
                 object = object.substr(space+1, object.length());
-              
-                space = object.find(' '); 
+
+                space = object.find(' ');
                 string o2 = object.substr(0, space);
                 object = object.substr(space+1, object.length());
                 string result = object;
@@ -225,15 +309,15 @@ void processRequests(int id) {
                 sub temp(op1, op2, res);
                 temp.execute();
                 cout << res->toJSON() << endl;
-            } else if (op.compare("DOT") == 0) {
-                space = message.find(' '); 
+              } else if (op.compare("DOT") == 0) {
+                space = message.find(' ');
                 object = object.substr(space+1, object.length());
 
-                space = object.find(' '); 
+                space = object.find(' ');
                 string o1 = object.substr(0, space);
                 object = object.substr(space+1, object.length());
-              
-                space = object.find(' '); 
+
+                space = object.find(' ');
                 string o2 = object.substr(0, space);
                 object = object.substr(space+1, object.length());
                 string result = object;
@@ -248,15 +332,15 @@ void processRequests(int id) {
                 dot temp(op1, op2, res);
                 temp.execute();
                 cout << res->toJSON() << endl;
-            } else if (op.compare("MUL") == 0) {
-                space = message.find(' '); 
+              } else if (op.compare("MUL") == 0) {
+                space = message.find(' ');
                 object = object.substr(space+1, object.length());
 
-                space = object.find(' '); 
+                space = object.find(' ');
                 string o1 = object.substr(0, space);
                 object = object.substr(space+1, object.length());
-              
-                space = object.find(' '); 
+
+                space = object.find(' ');
                 string o2 = object.substr(0, space);
                 object = object.substr(space+1, object.length());
                 string result = object;
@@ -271,23 +355,160 @@ void processRequests(int id) {
                 mult temp(op1, op2, res);
                 temp.execute();
                 cout << res->toJSON() << endl;
+              } else if (op.compare("DIV") == 0) {
+                space = message.find(' ');
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' ');
+                string o1 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' ');
+                string o2 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+                string result = object;
+
+                ostringstream convert;
+                convert << "Variable(" << o1 << ":" << o2 << ":" << result << ")";
+                output("DEBUG", convert.str(), !debug);
+
+                variable* op1 = list.find(o1);
+                variable* op2 = list.find(o2);
+                variable* res = list.find(result);
+                sdiv temp(op1, op2, res);
+                temp.execute();
+                cout << res->toJSON() << endl;
+              } else if (op.compare("ABS") == 0) {
+                space = message.find(' ');
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' ');
+                string o1 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+                string result = object;
+
+                ostringstream convert;
+                convert << "Variable(" << o1 << ":" << result << ")";
+                output("DEBUG", convert.str(), !debug);
+
+                variable* op1 = list.find(o1);
+                variable* res = list.find(result);
+                absolute temp(op1, res);
+                temp.execute();
+                cout << res->toJSON() << endl;
+              } else if (op.compare("TRANSPOSE") == 0) {
+                space = message.find(' ');
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' ');
+                string o1 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+                string result = object;
+
+                ostringstream convert;
+                convert << "Variable(" << o1 << ":" << result << ")";
+                output("DEBUG", convert.str(), !debug);
+
+                variable* op1 = list.find(o1);
+                variable* res = list.find(result);
+                transpose temp(op1, res);
+                temp.execute();
+                cout << res->toJSON() << endl;
+              } else if (op.compare("SIN") == 0) {
+                space = message.find(' ');
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' ');
+                string o1 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+                string result = object;
+
+                ostringstream convert;
+                convert << "Variable(" << o1 << ":" << result << ")";
+                output("DEBUG", convert.str(), !debug);
+
+                variable* op1 = list.find(o1);
+                variable* res = list.find(result);
+                sinFunction temp(op1, res);
+                temp.execute();
+                cout << res->toJSON() << endl;
+              } else if (op.compare("COS") == 0) {
+                space = message.find(' ');
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' ');
+                string o1 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+                string result = object;
+
+                ostringstream convert;
+                convert << "Variable(" << o1 << ":" << result << ")";
+                output("DEBUG", convert.str(), !debug);
+
+                variable* op1 = list.find(o1);
+                variable* res = list.find(result);
+                cosFunction temp(op1, res);
+                temp.execute();
+                cout << res->toJSON() << endl;
+              } else if (op.compare("SQRT") == 0) {
+                space = message.find(' ');
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' ');
+                string o1 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+                string result = object;
+
+                ostringstream convert;
+                convert << "Variable(" << o1 << ":" << result << ")";
+                output("DEBUG", convert.str(), !debug);
+
+                variable* op1 = list.find(o1);
+                variable* res = list.find(result);
+                squareRoot temp(op1, res);
+                temp.execute();
+                cout << res->toJSON() << endl;
+              }
+            } catch (RanksNotEqualError e) {
+              errorHandler(&e, id);
+              noErrors = false;
+            } catch (DimensionsNotEqualError e) {
+              errorHandler(&e, id);
+              noErrors = false;
+            } catch (NotVectorError e) {
+              errorHandler(&e, id);
+              noErrors = false;
+            } catch (NotScalarError e) {
+              errorHandler(&e, id);
+              noErrors = false;
+            } catch (VariableNotFoundError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (VariableAlreadyExistsError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (VariableNotDefinedError e) {
+                errorHandler(&e, id);
+                noErrors = false;
             }
 
             message = message.substr(pos+1, message.length());
             pos = message.find(';');
         }
 
-        string returnVal = list.find("result")->toJSON();
-
         //Sends the result back
-        int result = write(id, returnVal.c_str(), returnVal.length());
-        if (n < 0) output("ERROR", "ERROR writing socket", false);
-        output("DEBUG", "End of while loop", !debug);
-        message = "VODDO";
+        if (noErrors) {
+          string returnVal = list.find("result")->toJSON();
+
+          int result = write(id, returnVal.c_str(), returnVal.length());
+          if (n < 0) output("ERROR", "ERROR writing socket", false);
+          output("DEBUG", "End of while loop", !debug);
+          message = "VODDO";
+        }
     }
 
     output("DEBUG", "Out of while loop", !debug);
-    
+
 
     output("ProcessRequest", "Closing Connection", false);
     close(id);
@@ -312,6 +533,13 @@ void output(string _location, string _message, bool _silent) {
 
         strftime(buffer, 80, "%F %T", timeinfo);
 
-        cout << buffer << " [" << _location << "] " << _message << flush << endl; 
+        cout << buffer << " [" << _location << "] " << _message << flush << endl;
     }
+}
+
+void errorHandler(error* e, int id) {
+  output("ERROR", e->getMessage(), false);
+
+  int result = write(id, e->getResponse(), strlen(e->getResponse()));
+  if (result < 0) output("ERROR", "ERROR writing socket", debug);
 }

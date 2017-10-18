@@ -1,9 +1,18 @@
-//@todo maybe make it read from a file
 #include "config.h"
+
+config* config::instance = 0;
 
 config::config() {
     silent = false;
     port = 8000;
+}
+
+config* config::getInstance() {
+  if (instance == 0) {
+    instance = new config();
+  }
+
+  return instance;
 }
 
 void config::setSilent(bool _silent) {
