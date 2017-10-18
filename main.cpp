@@ -1,12 +1,22 @@
 //@todo add better comments
+#include "lib/calculations/abs.h"
 #include "lib/calculations/add.h"
 #include "lib/calculations/dot.h"
+#include "lib/calculations/div.h"
 #include "lib/calculations/sub.h"
 #include "lib/calculations/mult.h"
+#include "lib/calculations/transpose.h"
+#include "lib/calculations/sin.h"
+#include "lib/calculations/cos.h"
+#include "lib/calculations/sqrt.h"
 #include "lib/helper/config.h"
 #include "lib/helper/daemonize.h"
 #include "lib/variables/variable.h"
 #include "lib/varList/varlist.h"
+#include "lib/errors/error.h"
+#include "lib/errors/variable_error.h"
+#include "lib/errors/calculations_error.h"
+#include "lib/errors/varlist_error.h"
 #include <ctime>
 #include <iostream>
 #include <stdio.h>
@@ -23,6 +33,7 @@ using namespace std;
 
 void processRequests(int);
 void output(string, string, bool);
+void errorHandler(error*, int);
 bool debug = false;
 
 int main(int argc, char const *argv[])
@@ -151,6 +162,8 @@ void processRequests(int id) {
         varlist list;
         bzero(buffer,2048);
         int n = read(id,buffer,2047);
+        bool noErrors = true;
+
         if (n < 0) {
             output("ERROR", "ERROR reading from socket", false);
             output("ProcessRequest", "Closing Connection", false);
@@ -159,13 +172,80 @@ void processRequests(int id) {
         }
 
         string message(buffer);
-        cout << message;
+        // cout << message;
+        int pos = message.find("QUIT");
+        if (pos == 0) {
+          output("DEBUG", "Out of processing", !debug);
+
+
+          output("ProcessRequest", "Closing Connection", false);
+          close(id);
+          exit(0);
+        }
 
         // get the variables out
-        int pos = message.find('}');
-        while(pos > 0) {
+        pos = message.find('}');
+        while(pos > 0 && noErrors) {
             string object = message.substr(0, pos+1);
-            variable *temp = new variable(object);
+            variable *temp;
+            try {
+              temp = new variable(object);
+            } catch (NotObjectError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (NoNameError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (NoSaveError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (NoValuesError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (NoRankError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (NoDimensionsError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (NameNotStringError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (SaveNotBoolError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (RankNotInt e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (DimensionsNotArray e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (ValuesNotArray e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (DimensionsWrongSizeError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (ValuessWrongSizeError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (Rank0Error e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (OutOfBounds e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (VariableNotFoundError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (VariableAlreadyExistsError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (VariableNotDefinedError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            }
+
             list.add(temp);
 
             message = message.substr(pos+2, message.length());
@@ -174,17 +254,18 @@ void processRequests(int id) {
 
         //get the calucaltions out
         pos = message.find(';');
-        while(pos > 0) {
+        while(pos > 0 && noErrors) {
             cout << "Instructions" << endl;
             string object = message.substr(0, pos);
             cout << object << endl;
             int space = message.find(' ');
             string op = object.substr(0, space);
 
-            if (op.compare("SUM") == 0) {
+            try {
+              if (op.compare("SUM") == 0) {
                 //Will pull out the variable names
                 space = message.find(' ');
-            	object = object.substr(space+1, object.length());
+              	object = object.substr(space+1, object.length());
 
                 space = object.find(' ');
                 string o1 = object.substr(0, space);
@@ -205,7 +286,7 @@ void processRequests(int id) {
                 add temp(op1, op2, res);
                 temp.execute();
                 cout << res->toJSON() << endl;
-            } else if (op.compare("SUB") == 0) {
+              } else if (op.compare("SUB") == 0) {
                 space = message.find(' ');
                 object = object.substr(space+1, object.length());
 
@@ -228,7 +309,7 @@ void processRequests(int id) {
                 sub temp(op1, op2, res);
                 temp.execute();
                 cout << res->toJSON() << endl;
-            } else if (op.compare("DOT") == 0) {
+              } else if (op.compare("DOT") == 0) {
                 space = message.find(' ');
                 object = object.substr(space+1, object.length());
 
@@ -251,7 +332,7 @@ void processRequests(int id) {
                 dot temp(op1, op2, res);
                 temp.execute();
                 cout << res->toJSON() << endl;
-            } else if (op.compare("MUL") == 0) {
+              } else if (op.compare("MUL") == 0) {
                 space = message.find(' ');
                 object = object.substr(space+1, object.length());
 
@@ -274,19 +355,156 @@ void processRequests(int id) {
                 mult temp(op1, op2, res);
                 temp.execute();
                 cout << res->toJSON() << endl;
+              } else if (op.compare("DIV") == 0) {
+                space = message.find(' ');
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' ');
+                string o1 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' ');
+                string o2 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+                string result = object;
+
+                ostringstream convert;
+                convert << "Variable(" << o1 << ":" << o2 << ":" << result << ")";
+                output("DEBUG", convert.str(), !debug);
+
+                variable* op1 = list.find(o1);
+                variable* op2 = list.find(o2);
+                variable* res = list.find(result);
+                sdiv temp(op1, op2, res);
+                temp.execute();
+                cout << res->toJSON() << endl;
+              } else if (op.compare("ABS") == 0) {
+                space = message.find(' ');
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' ');
+                string o1 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+                string result = object;
+
+                ostringstream convert;
+                convert << "Variable(" << o1 << ":" << result << ")";
+                output("DEBUG", convert.str(), !debug);
+
+                variable* op1 = list.find(o1);
+                variable* res = list.find(result);
+                absolute temp(op1, res);
+                temp.execute();
+                cout << res->toJSON() << endl;
+              } else if (op.compare("TRANSPOSE") == 0) {
+                space = message.find(' ');
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' ');
+                string o1 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+                string result = object;
+
+                ostringstream convert;
+                convert << "Variable(" << o1 << ":" << result << ")";
+                output("DEBUG", convert.str(), !debug);
+
+                variable* op1 = list.find(o1);
+                variable* res = list.find(result);
+                transpose temp(op1, res);
+                temp.execute();
+                cout << res->toJSON() << endl;
+              } else if (op.compare("SIN") == 0) {
+                space = message.find(' ');
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' ');
+                string o1 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+                string result = object;
+
+                ostringstream convert;
+                convert << "Variable(" << o1 << ":" << result << ")";
+                output("DEBUG", convert.str(), !debug);
+
+                variable* op1 = list.find(o1);
+                variable* res = list.find(result);
+                sinFunction temp(op1, res);
+                temp.execute();
+                cout << res->toJSON() << endl;
+              } else if (op.compare("COS") == 0) {
+                space = message.find(' ');
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' ');
+                string o1 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+                string result = object;
+
+                ostringstream convert;
+                convert << "Variable(" << o1 << ":" << result << ")";
+                output("DEBUG", convert.str(), !debug);
+
+                variable* op1 = list.find(o1);
+                variable* res = list.find(result);
+                cosFunction temp(op1, res);
+                temp.execute();
+                cout << res->toJSON() << endl;
+              } else if (op.compare("SQRT") == 0) {
+                space = message.find(' ');
+                object = object.substr(space+1, object.length());
+
+                space = object.find(' ');
+                string o1 = object.substr(0, space);
+                object = object.substr(space+1, object.length());
+                string result = object;
+
+                ostringstream convert;
+                convert << "Variable(" << o1 << ":" << result << ")";
+                output("DEBUG", convert.str(), !debug);
+
+                variable* op1 = list.find(o1);
+                variable* res = list.find(result);
+                squareRoot temp(op1, res);
+                temp.execute();
+                cout << res->toJSON() << endl;
+              }
+            } catch (RanksNotEqualError e) {
+              errorHandler(&e, id);
+              noErrors = false;
+            } catch (DimensionsNotEqualError e) {
+              errorHandler(&e, id);
+              noErrors = false;
+            } catch (NotVectorError e) {
+              errorHandler(&e, id);
+              noErrors = false;
+            } catch (NotScalarError e) {
+              errorHandler(&e, id);
+              noErrors = false;
+            } catch (VariableNotFoundError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (VariableAlreadyExistsError e) {
+                errorHandler(&e, id);
+                noErrors = false;
+            } catch (VariableNotDefinedError e) {
+                errorHandler(&e, id);
+                noErrors = false;
             }
 
             message = message.substr(pos+1, message.length());
             pos = message.find(';');
         }
 
-        string returnVal = list.find("result")->toJSON();
-
         //Sends the result back
-        int result = write(id, returnVal.c_str(), returnVal.length());
-        if (n < 0) output("ERROR", "ERROR writing socket", false);
-        output("DEBUG", "End of while loop", !debug);
-        message = "VODDO";
+        if (noErrors) {
+          string returnVal = list.find("result")->toJSON();
+
+          int result = write(id, returnVal.c_str(), returnVal.length());
+          if (n < 0) output("ERROR", "ERROR writing socket", false);
+          output("DEBUG", "End of while loop", !debug);
+          message = "VODDO";
+        }
     }
 
     output("DEBUG", "Out of while loop", !debug);
@@ -317,4 +535,11 @@ void output(string _location, string _message, bool _silent) {
 
         cout << buffer << " [" << _location << "] " << _message << flush << endl;
     }
+}
+
+void errorHandler(error* e, int id) {
+  output("ERROR", e->getMessage(), false);
+
+  int result = write(id, e->getResponse(), strlen(e->getResponse()));
+  if (result < 0) output("ERROR", "ERROR writing socket", debug);
 }

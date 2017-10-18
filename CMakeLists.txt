@@ -31,6 +31,17 @@ set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/sub)
 set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/dot)
 set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/mult)
 set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/mul)
+set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/div)
+set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/abs)
+set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/transpose)
+set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/sin)
+set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/cos)
+set (EXTRA_LIBS ${EXTRA_LIBS} lib/calculations/sqrt)
+
+#include flags
+# SET(GCC_COVERAGE_COMPILE_FLAGS "-Wwrite-strings")
+# add_definitions(${GCC_COVERAGE_COMPILE_FLAGS}
+set (CMAKE_CXX_FLAGS "-Wno-write-strings")
 
 # Link runTests with what we want to test and the GTest and pthread library
 add_executable(runTests.out tests/main.cpp ${EXTRA_LIBS})

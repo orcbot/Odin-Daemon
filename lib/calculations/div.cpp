@@ -1,13 +1,13 @@
-#include "mult.h"
+#include "div.h"
 #include "../errors/calculations_error.h"
 
-mult::mult(variable* _op1, variable* _op2, variable* _result) {
+sdiv::sdiv(variable* _op1, variable* _op2, variable* _result) {
 	operant1 = _op1;
 	operant2 = _op2;
 	result = _result;
 }
 
-void mult::execute() {
+void sdiv::execute() {
 	if (!(operant1->getRank() == 1 && operant1->getDimension(0) == 1) && !(operant2->getRank() == 1 && operant2->getDimension(0) == 1)) {
 		throw NotScalarError();
 	}
@@ -27,7 +27,7 @@ void mult::execute() {
 
 		for (int i = 0; i < length; ++i)
 		{
-			finalValues[i] = scalar * operant2->getValue(i);
+			finalValues[i] = operant2->getValue(i) / scalar;
 		}
 
 		//set result
@@ -49,7 +49,7 @@ void mult::execute() {
 
 		for (int i = 0; i < length; ++i)
 		{
-			finalValues[i] = scalar * operant1->getValue(i);
+			finalValues[i] = operant1->getValue(i) / scalar;
 		}
 
 		//set result
